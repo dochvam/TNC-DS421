@@ -44,7 +44,6 @@ ebird_UT_obs <- read_csv("../eBird_Data/subsets-2019/state_rdbs/UT_Aug2019_speci
                   filter(name_clean %in% target_common_names)
 ebird_UT_checklists <- read_csv("../eBird_Data/subsets-2019/state_rdbs/UT_Aug2019_checklist_info.csv")
 
-
 # 
 species_names <- ebird_CA_obs %>% 
                  select(name_clean, SCIENTIFIC.NAME) %>% 
@@ -60,6 +59,23 @@ NABBS_data <- lapply(NABBS_files, read_csv)
 gbif_data <- read_delim(file = "gbif_data_28012020/0000808-200127171203522.csv", 
                         delim = "\t", quote = "")
 ```
+
+
+To save myself time later on, I'm going to write out the eBird obs and checklist files filtered for the species we want inside this repo.
+```{r}
+write_csv(ebird_CA_obs, "eBird_data/ebird_target_spec_obs_CA.csv")
+write_csv(ebird_NV_obs, "eBird_data/ebird_target_spec_obs_NV.csv")
+write_csv(ebird_UT_obs, "eBird_data/ebird_target_spec_obs_UT.csv")
+write_csv(ebird_AZ_obs, "eBird_data/ebird_target_spec_obs_AZ.csv")
+
+write_csv(ebird_CA_checklists, "eBird_data/ebird_target_spec_checklists_CA.csv")
+write_csv(ebird_NV_checklists, "eBird_data/ebird_target_spec_checklists_NV.csv")
+write_csv(ebird_UT_checklists, "eBird_data/ebird_target_spec_checklists_UT.csv")
+write_csv(ebird_AZ_checklists, "eBird_data/ebird_target_spec_checklists_AZ.csv")
+
+```
+
+
 
 
 Let's explore the data a bit. What do we have?

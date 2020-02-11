@@ -267,8 +267,10 @@ names(precip) <- paste0("precip_", 3:7)
 climate_rasters <- crop(precip, extent(points) + 0.2)
 
 mean_precip <- mean(climate_rasters)
+{
 plot(mean_precip)
-
+points(points, pch = 16, cex = 0.2)
+}
 distinct_locations$mean_precip <- extract(mean_precip, points)
 ```
 
@@ -310,14 +312,15 @@ get_var_wide <- function(df, col, maxobs) {
 cropped_checklists_shuffled <- sample(cropped_checklists)
 
 nsites <- 47343
+nvisits <- 10
 
 # Start getting matrices of each variable of interest
-observed_mtx <- get_var_wide(cropped_checklists_shuffled, "observed", 5)
-distance_mtx <- get_var_wide(cropped_checklists_shuffled, "EFFORT.DISTANCE.KM", 5)
-tod_mtx <- get_var_wide(cropped_checklists_shuffled, "tod", 5)
-doy_mtx <- get_var_wide(cropped_checklists_shuffled, "yday", 5)
-protocol_mtx <- get_var_wide(cropped_checklists_shuffled, "PROTOCOL.CODE", 5)
-duration_mtx <- get_var_wide(cropped_checklists_shuffled, "DURATION.MINUTES", 5)
+observed_mtx <- get_var_wide(cropped_checklists_shuffled, "observed", nvisits)
+distance_mtx <- get_var_wide(cropped_checklists_shuffled, "EFFORT.DISTANCE.KM", nvisits)
+tod_mtx <- get_var_wide(cropped_checklists_shuffled, "tod", nvisits)
+doy_mtx <- get_var_wide(cropped_checklists_shuffled, "yday", nvisits)
+protocol_mtx <- get_var_wide(cropped_checklists_shuffled, "PROTOCOL.CODE", nvisits)
+duration_mtx <- get_var_wide(cropped_checklists_shuffled, "DURATION.MINUTES", nvisits)
 ```
 
 
@@ -354,21 +357,30 @@ summary(occu_frame)
 ### Run the `unmarked` model
 
 ```{r}
-occufit <- occu(~ distance + tod + doy + duration + protocol + precip ~ precip + latitude * longitude, data = occu_frame)
+occufit <- occu(~ distance + tod + doy + duration + protocol ~ precip, data = occu_frame)
 
 summary(occufit)
 ```
 
 
 
+### Put back onto space
+
+```{r}
+predicted_occu <- precip
+values(predicted_occu) <- locfit::expit(-0.35426497 + -0.08966197 * values(precip))
+
+```
 
 
 
-### Output some
+# TODO: 
 
-
-# TODO: enforce a specific degree of lat/lon rounding
-
+- Enforce a specific degree of lat/lon rounding
+- Include more covariates
+- Figure out goodness-of-fit check for the model
+- Get Mexico data?
+- Ask TNC folks for covariate ideas
 
 
 

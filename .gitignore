@@ -3,4 +3,4 @@
 .RData
 .Ruserdata
 eBird_data
-climate_data
+climate_data/*

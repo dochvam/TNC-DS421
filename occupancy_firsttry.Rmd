@@ -9,6 +9,7 @@ output: html_document
 library(unmarked)
 library(raster)
 library(tidyverse)
+library(prism)
 ```
 
 Our four species are: verdin, black-tailed gnatcatcher, crissal thrasher, and least Bell's vireo.
@@ -228,50 +229,52 @@ points <- SpatialPointsDataFrame(coords = distinct_locations[, c("LONGITUDE", "L
 Extract 4 climate variables from the PRISM climate dataset:
 
 ```{r}
-options(prism.path = "/Volumes/deValpineLab/TNC-DS421/climate_data/")
-get_prism_normals(type = "ppt", resolution = "800m", mon = 3:7, keepZip = TRUE)
-# get_prism_normals(type = "tmean", resolution = "800m", mon = 3:7, keepZip = TRUE)
-# get_prism_normals(type = "tmin", resolution = "800m", mon = 3:7, keepZip = TRUE)
-# get_prism_normals(type = "tmax", resolution = "800m", mon = 3:7, keepZip = TRUE)
-
-raster_files <- list.files(path = "climate_data/", 
-                           full.names = TRUE, recursive = T, pattern = "\\.bil$")
-
-precip_files <- raster_files[grepl("ppt", raster_files)]
-# tmean_files <- raster_files[grepl("tmean", raster_files)]
-# tmin_files <- raster_files[grepl("tmin", raster_files)]
-# tmax_files <- raster_files[grepl("tmax", raster_files)]
-
-precip_rasters <- purrr::map(precip_files, raster)
-precip <- stack(precip_rasters)
-names(precip) <- paste0("precip_", 3:7)
-
-# tmean_rasters <- purrr::map(tmean_files, raster)
-# tmean <- stack(tmean_rasters)
-# names(tmean) <- paste0("tmean_", 3:7)
-# 
-# tmin_rasters <- purrr::map(tmin_files, raster)
-# tmin <- stack(tmin_rasters)
-# names(tmin) <- paste0("tmin_", 3:7)
-# 
-# tmax_rasters <- purrr::map(tmax_files, raster)
-# tmax <- stack(tmax_rasters)
-# names(tmax) <- paste0("tmax_", 3:7)
-
-# climate_rasters <- stack(precip,
-#                          tmean,
-#                          tmin,
-#                          tmax)
-
-# climate_rasters <- crop(climate_rasters, extent(points) + 0.2)
-climate_rasters <- crop(precip, extent(points) + 0.2)
-
-mean_precip <- mean(climate_rasters)
-{
-plot(mean_precip)
-points(points, pch = 16, cex = 0.2)
+if (!file.exists("climate_data/PRISM_proc_crop_raster_stack.grd")) {
+  options(prism.path = "/Volumes/deValpineLab/TNC-DS421/climate_data/")
+  get_prism_normals(type = "ppt", resolution = "800m", mon = 1:12, keepZip = TRUE)
+  get_prism_normals(type = "tmean", resolution = "800m", mon = 1:12, keepZip = TRUE)
+  get_prism_normals(type = "tmin", resolution = "800m", mon = 1:12, keepZip = TRUE)
+  get_prism_normals(type = "tmax", resolution = "800m", mon = 1:12, keepZip = TRUE)
+  
+  raster_files <- list.files(path = "climate_data/", 
+                             full.names = TRUE, recursive = T, pattern = "\\.bil$")
+  
+  precip_files <- raster_files[grepl("ppt", raster_files)]
+  tmean_files <- raster_files[grepl("tmean", raster_files)]
+  tmin_files <- raster_files[grepl("tmin", raster_files)]
+  tmax_files <- raster_files[grepl("tmax", raster_files)]
+  
+  precip_rasters <- purrr::map(precip_files, raster)
+  precip_rasters <- crop(stack(precip_rasters), extent(points) + 0.2)
+  precip <- mean(precip_rasters)
+  
+  tmean_rasters <- purrr::map(tmean_files, raster)
+  tmean_rasters <- crop(stack(tmean_rasters), extent(points) + 0.2)
+  tmean <- mean(tmean_rasters)
+  
+  tmin_rasters <- purrr::map(tmin_files, raster)
+  tmin_rasters <- crop(stack(tmin_rasters), extent(points) + 0.2)
+  tmin <- min(tmin_rasters)
+  # 
+  tmax_rasters <- purrr::map(tmax_files, raster)
+  tmax_rasters <- crop(stack(tmax_rasters), extent(points) + 0.2)
+  tmax <- max(tmax_rasters)
+  
+  climate_rasters <- stack(precip,
+                           tmean,
+                           tmin,
+                           tmax)
+  
+  stackSave(climate_rasters, "climate_data/PRISM_proc_crop_raster_stack.stk")
+} else {
+  climate_rasters <- stackOpen("climate_data/PRISM_proc_crop_raster_stack.stk")
 }
-distinct_locations$mean_precip <- extract(mean_precip, points)
+env_covs <- raster::extract(climate_rasters, points)
+
+distinct_locations$precip <- env_covs[,1]
+distinct_locations$tmean <- env_covs[,2]
+distinct_locations$tmin <- env_covs[,3]
+distinct_locations$tmax <- env_covs[,4]
 ```
 
 
@@ -328,9 +331,12 @@ duration_mtx <- get_var_wide(cropped_checklists_shuffled, "DURATION.MINUTES", nv
 Now we start putting the data frames together.
 
 ```{r}
-site_covariates <- data.frame(precip = distinct_locations$mean_precip,
-                        latitude = distinct_locations$LATITUDE,
-                        longitude = distinct_locations$LONGITUDE)[1:nsites,]
+site_covariates <- data.frame(precip = distinct_locations$precip,
+                              tmean = distinct_locations$tmean,
+                              tmax = distinct_locations$tmax,
+                              tmin = distinct_locations$tmin,
+                              latitude = distinct_locations$LATITUDE,
+                              longitude = distinct_locations$LONGITUDE)[1:nsites,]
 observation_covariates <- list(distance = distance_mtx[1:nsites,],
                                tod = tod_mtx[1:nsites,],
                                doy = doy_mtx[1:nsites,],
@@ -345,6 +351,21 @@ How does what we have correspond to the model?
 - The matrices in the list `observation_covariates` are each $X_{ij}$, comprising $X_{ij}^l$
 - The vectors in the list `site_covariates` are each $W_{i}$, comprising $W_{i}^l$
 
+<!-- Michael wanted the following covariates: -->
+<!-- - Mean precipitation -->
+<!--     - Min/max precip -->
+<!-- - Mean temp -->
+<!--     - Min/max temp -->
+<!-- - Land cover -->
+<!-- - Distance from fresh water -->
+<!-- - Pop density? -->
+<!-- - Wetland/riparian vs desert shrubs? -->
+<!-- - SouthWest ReGAP -->
+
+
+
+
+
 ```{r}
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
@@ -357,7 +378,9 @@ summary(occu_frame)
 ### Run the `unmarked` model
 
 ```{r}
-occufit <- occu(~ distance + tod + doy + duration + protocol ~ precip, data = occu_frame)
+occufit <- occu(~ distance + tod + tod^2 + doy + doy^2 + duration + protocol 
+                ~ precip + tmean + tmin + tmax, 
+                data = occu_frame)
 
 summary(occufit)
 ```

@@ -58,4 +58,42 @@ distinct_locations$tmax <- env_covs[,4]
 
 
 
+nlcd_legend <- data.frame(cover_key = c(11, 12, 21, 22, 23, 24, 31, 41, 42, 43, 
+                                        51, 52, 71, 72, 73, 74, 81, 82, 90, 95),
+                          cover = c("Open Water",
+                                    "Perennial Ice/Snow",
+                                    "Developed, Open Space",
+                                    "Developed, Low Intensity",
+                                    "Developed, Medium Intensity",
+                                    "Developed, High Intensity",
+                                    "Barren Land (Rock/Sand/Clay)",
+                                    "Deciduous Forest",
+                                    "Evergreen Forest",
+                                    "Mixed Forest",
+                                    "Dwarf Scrub",
+                                    "Shrub/Scrub",
+                                    "Grassland/Herbaceous",
+                                    "Sedge/Herbaceous",
+                                    "Lichens",
+                                    "Moss",
+                                    "Pasture/Hay",
+                                    "Cultivated Crops",
+                                    "Woody Wetlands",
+                                    "Emergent Herbaceous Wetlands"))
 
+r_nlcd <- raster("../eBird_heatwave/data/nlcd_landcover")
+landcover <- raster::extract(r_nlcd, points)
+
+data.frame(cover_key = landcover) %>% 
+  count(cover_key) %>% 
+  left_join(nlcd_legend) %>% 
+  write_csv("intermediate/landcover_summary")
+
+distinct_locations$landcover <- landcover
+
+
+pop_density <- raster("../eBird_heatwave/data/pop_density")
+distinct_locations$pop_density <- raster::extract(pop_density, points)
+
+
+write_csv(distinct_locations, "intermediate/distinct_locations_w_env.csv")

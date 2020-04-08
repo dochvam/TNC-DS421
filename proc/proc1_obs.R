@@ -71,8 +71,21 @@ distinct_locations_test <- good_checklist_info %>%
 
 all_obs <- bind_rows(ebird_NV_obs, ebird_CA_obs, ebird_AZ_obs, ebird_UT_obs)
 btg_obs <- all_obs %>% filter(name_clean == "Black-tailed_Gnatcatcher")
+vrd_obs <- all_obs %>% filter(name_clean == "Verdin")
+cth_obs <- all_obs %>% filter(name_clean == "Crissal_Thrasher")
+bvo_obs <- all_obs %>% filter(name_clean == "Bells_Vireo")
 
-good_checklist_info$observed <- good_checklist_info$SAMPLING.EVENT.IDENTIFIER %in% btg_obs$SAMPLING.EVENT.IDENTIFIER
+good_checklist_info$btg_observed <- 
+  good_checklist_info$SAMPLING.EVENT.IDENTIFIER %in% btg_obs$SAMPLING.EVENT.IDENTIFIER
+good_checklist_info$vrd_observed <- 
+  good_checklist_info$SAMPLING.EVENT.IDENTIFIER %in% vrd_obs$SAMPLING.EVENT.IDENTIFIER
+good_checklist_info$cth_observed <- 
+  good_checklist_info$SAMPLING.EVENT.IDENTIFIER %in% cth_obs$SAMPLING.EVENT.IDENTIFIER
+good_checklist_info$bvo_observed <- 
+  good_checklist_info$SAMPLING.EVENT.IDENTIFIER %in% bvo_obs$SAMPLING.EVENT.IDENTIFIER
+
+
+
 
 sum(!(btg_obs$SAMPLING.EVENT.IDENTIFIER %in% good_checklist_info$SAMPLING.EVENT.IDENTIFIER)) /
   nrow(btg_obs)
@@ -85,3 +98,4 @@ distinct_locations <- cropped_checklists %>%
                       mutate(id = row_number())
 
 write_csv(distinct_locations, "intermediate/distinct_locations.csv")
+write_csv(cropped_checklists, "intermediate/cropped_checklists.csv")

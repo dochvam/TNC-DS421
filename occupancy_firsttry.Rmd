@@ -351,18 +351,8 @@ How does what we have correspond to the model?
 - The matrices in the list `observation_covariates` are each $X_{ij}$, comprising $X_{ij}^l$
 - The vectors in the list `site_covariates` are each $W_{i}$, comprising $W_{i}^l$
 
-<!-- Michael wanted the following covariates: -->
-<!-- - Mean precipitation -->
-<!--     - Min/max precip -->
-<!-- - Mean temp -->
-<!--     - Min/max temp -->
-<!-- - Land cover -->
+<!-- Michael wanted the following missing covariates: -->
 <!-- - Distance from fresh water -->
-<!-- - Pop density? -->
-<!-- - Wetland/riparian vs desert shrubs? -->
-<!-- - SouthWest ReGAP -->
-
-
 
 
 
@@ -398,12 +388,9 @@ values(predicted_occu) <- locfit::expit(-0.35426497 + -0.08966197 * values(preci
 
 
 # TODO: 
-
-- Enforce a specific degree of lat/lon rounding
 - Include more covariates
 - Figure out goodness-of-fit check for the model
 - Get Mexico data?
-- Ask TNC folks for covariate ideas
 
 
 

@@ -9,7 +9,7 @@ points <- SpatialPointsDataFrame(coords = distinct_locations[, c("LONGITUDE", "L
                                  proj4string = CRS("+proj=longlat +datum=WGS84"))
 
 if (!file.exists("climate_data/PRISM_proc_crop_raster_stack.grd")) {
-  options(prism.path = "/Volumes/deValpineLab/TNC-DS421/climate_data/")
+  options(prism.path = "climate_data/")
   get_prism_normals(type = "ppt", resolution = "800m", mon = 1:12, keepZip = TRUE)
   get_prism_normals(type = "tmean", resolution = "800m", mon = 1:12, keepZip = TRUE)
   get_prism_normals(type = "tmin", resolution = "800m", mon = 1:12, keepZip = TRUE)
@@ -54,8 +54,6 @@ distinct_locations$precip <- env_covs[,1]
 distinct_locations$tmean <- env_covs[,2]
 distinct_locations$tmin <- env_covs[,3]
 distinct_locations$tmax <- env_covs[,4]
-
-
 
 
 nlcd_legend <- data.frame(cover_key = c(11, 12, 21, 22, 23, 24, 31, 41, 42, 43, 

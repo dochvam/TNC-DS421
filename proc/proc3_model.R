@@ -38,7 +38,6 @@ nsites <- 47343
 nvisits <- 20
 
 # Start getting matrices of each variable of interest
-observed_mtx <- get_var_wide(cropped_checklists_shuffled, "cth_observed", nvisits)
 distance_mtx <- get_var_wide(cropped_checklists_shuffled, "EFFORT.DISTANCE.KM", nvisits)
 tod_mtx <- get_var_wide(cropped_checklists_shuffled, "tod", nvisits)
 doy_mtx <- get_var_wide(cropped_checklists_shuffled, "yday", nvisits)
@@ -82,7 +81,7 @@ observation_covariates <- list(distance = scale(distance_mtx[1:nsites,]),
                                protocol = protocol_mtx[1:nsites,])
 
 
-
+observed_mtx <- get_var_wide(cropped_checklists_shuffled, "cth_observed", nvisits)
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
                                 obsCovs = observation_covariates)
@@ -96,48 +95,51 @@ system.time(
 )
 
 summary(cth_occufit)
-
 cth_covs <- data.frame(species = "Crissal_Thrasher",
                        param = names(cth_occufit@estimates@estimates$state@estimates),
                        est = cth_occufit@estimates@estimates$state@estimates)
 
-# 
+# Fit for black tailed gnatcatcher
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "btg_observed", nvisits)
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
                                 obsCovs = observation_covariates)
-btg_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + precip_sq + tmean + tmax + 
-                    latitude + longitude,
+system.time(
+  btg_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
                   data = occu_frame)
-btg_covs <- data.frame(species = "Black-throated_Gnatcatcher",
-                       param = names(cth_occufit@estimates@estimates$state@estimates),
-                       est = cth_occufit@estimates@estimates$state@estimates)
+)
+btg_covs <- data.frame(species = "Black-tailed_Gnatcatcher",
+                       param = names(btg_occufit@estimates@estimates$state@estimates),
+                       est = btg_occufit@estimates@estimates$state@estimates)
 
+# Fit for Bell's vireo
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "bvo_observed", nvisits)
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
                                 obsCovs = observation_covariates)
-bvo_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + precip_sq + tmean + tmax + 
-                    latitude + longitude,
+system.time(
+  bvo_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
                   data = occu_frame)
+)
 bvo_covs <- data.frame(species = "Bells_Vireo",
-                       param = names(cth_occufit@estimates@estimates$state@estimates),
-                       est = cth_occufit@estimates@estimates$state@estimates)
+                       param = names(bvo_occufit@estimates@estimates$state@estimates),
+                       est = bvo_occufit@estimates@estimates$state@estimates)
 
-
+# Fit for Verdin
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "vrd_observed", nvisits)
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
                                 obsCovs = observation_covariates)
-vrd_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + precip_sq + tmean + tmax + 
-                    latitude + longitude,
+system.time(
+  vrd_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
                   data = occu_frame)
+)
 vrd_covs <- data.frame(species = "Verdin",
-                       param = names(cth_occufit@estimates@estimates$state@estimates),
-                       est = cth_occufit@estimates@estimates$state@estimates)
+                       param = names(vrd_occufit@estimates@estimates$state@estimates),
+                       est = vrd_occufit@estimates@estimates$state@estimates)
 
 
 all_covs <- bind_rows(vrd_covs, bvo_covs, btg_covs, cth_covs)

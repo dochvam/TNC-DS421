@@ -35,7 +35,7 @@ cropped_checklists_shuffled <- sample(cropped_checklists) %>%
   filter(!is.na(pop_density))
 
 nsites <- 47343
-nvisits <- 20
+nvisits <- 5
 
 # Start getting matrices of each variable of interest
 distance_mtx <- get_var_wide(cropped_checklists_shuffled, "EFFORT.DISTANCE.KM", nvisits)
@@ -85,7 +85,6 @@ observed_mtx <- get_var_wide(cropped_checklists_shuffled, "cth_observed", nvisit
 occu_frame <- unmarkedFrameOccu(y = observed_mtx, 
                                 siteCovs = site_covariates, 
                                 obsCovs = observation_covariates)
-summary(occu_frame)
 
 # Fit model for crissal thrasher
 system.time(
@@ -93,8 +92,6 @@ system.time(
                   ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
                   data = occu_frame)
 )
-
-summary(cth_occufit)
 cth_covs <- data.frame(species = "Crissal_Thrasher",
                        param = names(cth_occufit@estimates@estimates$state@estimates),
                        est = cth_occufit@estimates@estimates$state@estimates)

@@ -7,35 +7,40 @@
 # above this file and contains the `data` and `src` primary folders. All paths are relative to this
 # directory.
 
-# load libraries
-library(unmarked)
-library(raster)
-library(tidyverse)
-library(prism)
-library(locfit)
-library(leaflet)
-library(shiny)
-library(rgdal)
-
-# load source files
 source("src/main/utils.R")
-source("src/main/viz.R") # in progress!!
+source("src/main/viz.R")
 
-# get inputs
+## 
+## load variables and set constants
+##
+
+# load the default variables
 prism_stack <- stackOpen("data/climate_data/PRISM_proc_crop_raster_stack.stk")
 all_covs <- read_csv("data/intermediate/model_coefficients.csv")
-scaling_factors <- read_csv("intermediate/scale_factors.csv")
+scaling_factors <- read_csv("data/intermediate/scale_factors.csv")
 
-# get occupancy
-verdin_occu_surface <- predict_occu_surface(prism_stack, all_covs, "Verdin", scaling_factors)
-thrasher_occu_surface <- predict_occu_surface(prism_stack, all_covs, "Crissal_Thrasher", scaling_factors)
-gnatcatcher_occu_surface <- predict_occu_surface(prism_stack, all_covs, "Black-tailed_Gnatcatcher", scaling_factors)
-vireo_occu_surface <- predict_occu_surface(prism_stack, all_covs, "Bells_Vireo", scaling_factors)
+# pick a species
+# options for species are: "Verdin", "Crissal_Thrasher", "Black-tailed-Gnatcatcher", and "Bells-Vireo"
+species = "Verdin"
 
-# plot surfaces
-plot(verdin_occu_surface)
-plot(thrasher_occu_surface)
-plot(gnatcatcher_occu_surface)
-plot(vireo_occu_surface)
+##
+## Example 1. Baseline Climate Conditions
+##
 
-# run visualization (in progress)
+occu_surface <- predict_occu_surface(prism_stack, all_covs, species, scaling_factors)
+display_raster(occu_surface, "%")
+
+##
+## Example 2. Use New Climate Conditions
+##
+
+climate_factors = c(0.8, 1, 1, 1) # 80% of precip, increases of 1 deg C for all temperature variables
+new_prism_stack = scale_climate_stack(prism_stack, climate_factors)
+occu_surface_new <- predict_occu_surface(new_prism_stack, all_covs, species, scaling_factors)
+display_raster(occu_surface_new, "%")
+
+##
+## Example 3. Use built in functions (eventually wrap this in RShiny)
+##
+
+display_occu_surface(prism_stack, all_covs, species, scaling_factors, c(0.1, 5, 5, 5)) # baseline climate

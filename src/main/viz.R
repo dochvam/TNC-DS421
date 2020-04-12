@@ -1,18 +1,25 @@
+# IMPT: SET YOUR WORKING DIRECTORY to the main TNC-DS421 project folder, which is two levels 
+# above this file and contains the `data` and `src` primary folders. All paths are relative to this
+# directory.
+
 library(leaflet)
 library(shiny)
-library(unmarked)
 library(raster)
 library(tidyverse)
 library(rgdal)
 
-# function to grab a dummy raster
-get_precip_raster <- function(){
-  precip <- raster("data/PRISM_ppt_30yr_normal_4kmM2_annual_bil/PRISM_ppt_30yr_normal_4kmM2_annual_bil.bil")
+source("src/main/utils.R")
+
+# project_raster_to_WGS84: function to project a raster to WGS84 if needed (this is the projection of PRISM)
+#   inputs: input raster
+#   outputs: NA (side effect is that theinput raster has been tagged with a projection)
+project_raster_to_WGS84 <- function(myraster) {
   crs(precip) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") # projection
-  return(precip)
 }
 
-# function to use leaflet to display a raster statically
+# display_raster: function to use leaflet to display a raster
+#   inputs: input raster and title
+#   outputs: leaflet visualization
 display_raster <- function(myraster, mytitle) {
   
   # get color palette
@@ -25,3 +32,16 @@ display_raster <- function(myraster, mytitle) {
     addLegend(pal = pal, values = values(myraster),
               title = mytitle)
 }
+
+# display_occu_surface: function to display an occupancy surface
+#   inputs: climate variables, covariates, species, scaling factors, and climate factors (to scale climate)
+#   outputs: leaflet visualization
+
+display_occu_surface <- function(climate_stack, all_covs, species, scaling_factors, climate_factors) {
+  
+  climate_stack_scaled = scale_climate_stack(climate_stack, climate_factors)
+  occu_surface <- predict_occu_surface(climate_stack_scaled, all_covs, species ,scaling_factors)
+  display_raster(occu_surface, "%")
+  
+}
+

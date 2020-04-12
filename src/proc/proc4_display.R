@@ -6,7 +6,7 @@ library(locfit)
 
 prism_stack <- stackOpen("data/climate_data/PRISM_proc_crop_raster_stack.stk")
 all_covs <- read_csv("data/intermediate/model_coefficients.csv")
-scaling_factors <- read_csv("intermediate/scale_factors.csv")
+scaling_factors <- read_csv("data/intermediate/scale_factors.csv")
 
 predict_occu_surface <- function(input_stack, all_covs, target_species, scaling_factors) {
   if (!(nlayers(input_stack) == 4)) {

@@ -4,8 +4,8 @@ library(tidyverse)
 library(prism)
 library(locfit)
 
-prism_stack <- stackOpen("climate_data/PRISM_proc_crop_raster_stack.stk")
-all_covs <- read_csv("intermediate/model_coefficients.csv")
+prism_stack <- stackOpen("data/climate_data/PRISM_proc_crop_raster_stack.stk")
+all_covs <- read_csv("data/intermediate/model_coefficients.csv")
 scaling_factors <- read_csv("intermediate/scale_factors.csv")
 
 predict_occu_surface <- function(input_stack, all_covs, target_species, scaling_factors) {

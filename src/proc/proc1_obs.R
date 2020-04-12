@@ -5,18 +5,18 @@ library(prism)
 
 target_common_names <- c("Verdin", "Black-tailed_Gnatcatcher", "Crissal_Thrasher", "Bells_Vireo")
 
-ebird_CA_obs <- read_csv("eBird_data/ebird_target_spec_obs_CA.csv") %>% 
+ebird_CA_obs <- read_csv("data/eBird_data/ebird_target_spec_obs_CA.csv") %>% 
                   filter(name_clean %in% target_common_names)
-ebird_CA_checklists <- read_csv("eBird_data/ebird_target_spec_checklists_CA.csv")
-ebird_NV_obs <- read_csv("eBird_data/ebird_target_spec_obs_NV.csv") %>% 
+ebird_CA_checklists <- read_csv("data/eBird_data/ebird_target_spec_checklists_CA.csv")
+ebird_NV_obs <- read_csv("data/eBird_data/ebird_target_spec_obs_NV.csv") %>% 
                   filter(name_clean %in% target_common_names)
-ebird_NV_checklists <- read_csv("eBird_data/ebird_target_spec_checklists_NV.csv")
-ebird_AZ_obs <- read_csv("eBird_data/ebird_target_spec_obs_AZ.csv") %>% 
+ebird_NV_checklists <- read_csv("data/eBird_data/ebird_target_spec_checklists_NV.csv")
+ebird_AZ_obs <- read_csv("data/eBird_data/ebird_target_spec_obs_AZ.csv") %>% 
                   filter(name_clean %in% target_common_names)
-ebird_AZ_checklists <- read_csv("eBird_data/ebird_target_spec_checklists_AZ.csv")
-ebird_UT_obs <- read_csv("eBird_data/ebird_target_spec_obs_UT.csv") %>% 
+ebird_AZ_checklists <- read_csv("data/eBird_data/ebird_target_spec_checklists_AZ.csv")
+ebird_UT_obs <- read_csv("data/eBird_data/ebird_target_spec_obs_UT.csv") %>% 
                   filter(name_clean %in% target_common_names)
-ebird_UT_checklists <- read_csv("eBird_data/ebird_target_spec_checklists_UT.csv")
+ebird_UT_checklists <- read_csv("data/eBird_data/ebird_target_spec_checklists_UT.csv")
 
 # Get unique species scientific - common name pairs
 species_names <- ebird_CA_obs %>% 
@@ -24,7 +24,7 @@ species_names <- ebird_CA_obs %>%
                  distinct(name_clean, SCIENTIFIC.NAME)
 
 # Get ebird protocol codes
-protocol_codes <- read_csv("eBird_data/ebird_protocol_codes.csv")
+protocol_codes <- read_csv("data/eBird_data/ebird_protocol_codes.csv")
 
 all_checklist_info <- bind_rows(ebird_AZ_checklists, ebird_CA_checklists, 
                                 ebird_NV_checklists, ebird_UT_checklists) %>% 
@@ -97,5 +97,5 @@ distinct_locations <- cropped_checklists %>%
                       filter(n > 1) %>% 
                       mutate(id = row_number())
 
-write_csv(distinct_locations, "intermediate/distinct_locations.csv")
-write_csv(cropped_checklists, "intermediate/cropped_checklists.csv")
+write_csv(distinct_locations, "data/intermediate/distinct_locations.csv")
+write_csv(cropped_checklists, "data/intermediate/cropped_checklists.csv")

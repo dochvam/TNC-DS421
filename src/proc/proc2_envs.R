@@ -3,19 +3,19 @@ library(raster)
 library(tidyverse)
 library(prism)
 
-distinct_locations <- read_csv("intermediate/distinct_locations.csv")
+distinct_locations <- read_csv("data/intermediate/distinct_locations.csv")
 points <- SpatialPointsDataFrame(coords = distinct_locations[, c("LONGITUDE", "LATITUDE")],
                                  data = distinct_locations, 
                                  proj4string = CRS("+proj=longlat +datum=WGS84"))
 
-if (!file.exists("climate_data/PRISM_proc_crop_raster_stack.grd")) {
-  options(prism.path = "climate_data/")
+if (!file.exists("data/climate_data/PRISM_proc_crop_raster_stack.grd")) {
+  options(prism.path = "data/climate_data/")
   get_prism_normals(type = "ppt", resolution = "800m", mon = 1:12, keepZip = TRUE)
   get_prism_normals(type = "tmean", resolution = "800m", mon = 1:12, keepZip = TRUE)
   get_prism_normals(type = "tmin", resolution = "800m", mon = 1:12, keepZip = TRUE)
   get_prism_normals(type = "tmax", resolution = "800m", mon = 1:12, keepZip = TRUE)
   
-  raster_files <- list.files(path = "climate_data/", 
+  raster_files <- list.files(path = "data/climate_data/", 
                              full.names = TRUE, recursive = T, pattern = "\\.bil$")
   
   precip_files <- raster_files[grepl("ppt", raster_files)]
@@ -44,9 +44,9 @@ if (!file.exists("climate_data/PRISM_proc_crop_raster_stack.grd")) {
                            tmin,
                            tmax)
   
-  stackSave(climate_rasters, "climate_data/PRISM_proc_crop_raster_stack.stk")
+  stackSave(climate_rasters, "data/climate_data/PRISM_proc_crop_raster_stack.stk")
 } else {
-  climate_rasters <- stackOpen("climate_data/PRISM_proc_crop_raster_stack.stk")
+  climate_rasters <- stackOpen("data/climate_data/PRISM_proc_crop_raster_stack.stk")
 }
 env_covs <- raster::extract(climate_rasters, points)
 
@@ -79,19 +79,19 @@ nlcd_legend <- data.frame(cover_key = c(11, 12, 21, 22, 23, 24, 31, 41, 42, 43,
                                     "Woody Wetlands",
                                     "Emergent Herbaceous Wetlands"))
 
-r_nlcd <- raster("../eBird_heatwave/data/nlcd_landcover")
+r_nlcd <- raster("../eBird_heatwave/data/nlcd_landcover") # local to Ben's computer
 landcover <- raster::extract(r_nlcd, points)
 
 data.frame(cover_key = landcover) %>% 
   count(cover_key) %>% 
   left_join(nlcd_legend) %>% 
-  write_csv("intermediate/landcover_summary")
+  write_csv("data/intermediate/landcover_summary")
 
 distinct_locations$landcover <- landcover
 
 
-pop_density <- raster("../eBird_heatwave/data/pop_density")
+pop_density <- raster("../eBird_heatwave/data/pop_density") # local to Ben's computer
 distinct_locations$pop_density <- raster::extract(pop_density, points)
 
 
-write_csv(distinct_locations, "intermediate/distinct_locations_w_env.csv")
+write_csv(distinct_locations, "data/intermediate/distinct_locations_w_env.csv")

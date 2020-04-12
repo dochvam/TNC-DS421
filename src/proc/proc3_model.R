@@ -4,8 +4,8 @@ library(tidyverse)
 library(prism)
 
 
-distinct_locations <- read_csv("intermediate/distinct_locations_w_env.csv")
-cropped_checklists <- read_csv("intermediate/cropped_checklists.csv")
+distinct_locations <- read_csv("data/intermediate/distinct_locations_w_env.csv")
+cropped_checklists <- read_csv("data/intermediate/cropped_checklists.csv")
 
 cropped_checklists <- left_join(cropped_checklists, 
                                 distinct_locations,
@@ -61,7 +61,7 @@ scale_factors <-
                sd(cropped_checklists_shuffled$LATITUDE, na.rm = T),
                sd(cropped_checklists_shuffled$LONGITUDE, na.rm = T)
              ))
-write_csv(scale_factors, "intermediate/scale_factors.csv")
+write_csv(scale_factors, "data/intermediate/scale_factors.csv")
 
 site_covariates <- data.frame(precip = (cropped_checklists_shuffled$precip - scale_factors$median[1]) / scale_factors$sd[1],
                               precip_sq = ((cropped_checklists_shuffled$precip - scale_factors$median[1]) / scale_factors$sd[1])^2,
@@ -140,5 +140,5 @@ vrd_covs <- data.frame(species = "Verdin",
 
 
 all_covs <- bind_rows(vrd_covs, bvo_covs, btg_covs, cth_covs)
-write_csv(all_covs, "intermediate/model_coefficients.csv")
+write_csv(all_covs, "data/intermediate/model_coefficients.csv")
 

@@ -34,15 +34,22 @@ if (!file.exists("data/climate_data/PRISM_proc_crop_raster_stack.grd")) {
   tmin_rasters <- purrr::map(tmin_files, raster)
   tmin_rasters <- crop(stack(tmin_rasters), extent(points) + 0.2)
   tmin <- min(tmin_rasters)
-  # 
+  
   tmax_rasters <- purrr::map(tmax_files, raster)
   tmax_rasters <- crop(stack(tmax_rasters), extent(points) + 0.2)
   tmax <- max(tmax_rasters)
   
-  climate_rasters <- stack(precip,
-                           tmean,
-                           tmin,
-                           tmax)
+  # save the individual raster files
+  precip_final <- writeRaster(precip, filename = "data/climate_data/precip_final.grd", prj=TRUE)
+  tmean_final <- writeRaster(tmean, filename = "data/climate_data/tmean_final.grd", prj=TRUE)
+  tmin_final <- writeRaster(tmin, filename = "data/climate_data/tmin_final.grd", prj=TRUE)
+  tmax_final <- writeRaster(tmax, filename = "data/climate_data/tmax_final.grd", prj=TRUE)
+  
+  # save the stack
+  climate_rasters <- stack(precip_final,
+                           tmean_final,
+                           tmin_final,
+                           tmax_final)
   
   stackSave(climate_rasters, "data/climate_data/PRISM_proc_crop_raster_stack.stk")
 } else {

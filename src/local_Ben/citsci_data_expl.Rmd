@@ -1,0 +1,123 @@
+---
+title: "Citizen science data exploration"
+author: "Ben Goldstein"
+date: "1/28/2020"
+output: html_document
+---
+
+
+This script reads in eBird data for the four target species. 
+It will only work on Ben's computer as he has the data.
+
+```{r, include = FALSE}
+library(tidyverse)
+library(XML)
+```
+
+Our four species are: verdin, black-tailed gnatcatcher, crissal thrasher, and least Bell's vireo.
+
+```{r}
+target_common_names <- c("Verdin", "Black-tailed_Gnatcatcher", "Crissal_Thrasher", "Bells_Vireo")
+```
+
+
+First, read in the data we have. Data come from 4 sources: eBird, iNaturalist, GBIF, and NABBS.
+
+```{r message = F}
+# eBird data
+ebird_CA_obs <- read_csv("../eBird_Data/subsets-2019/state_rdbs/CA_Aug2019_species_counts.csv") %>% 
+                  filter(name_clean %in% target_common_names)
+ebird_CA_checklists <- read_csv("../eBird_Data/subsets-2019/state_rdbs/CA_Aug2019_checklist_info.csv")
+
+
+ebird_NV_obs <- read_csv("../eBird_Data/subsets-2019/state_rdbs/NV_Aug2019_species_counts.csv") %>% 
+                  filter(name_clean %in% target_common_names)
+ebird_NV_checklists <- read_csv("../eBird_Data/subsets-2019/state_rdbs/NV_Aug2019_checklist_info.csv")
+
+
+ebird_AZ_obs <- read_csv("../eBird_Data/subsets-2019/state_rdbs/AZ_Aug2019_species_counts.csv") %>% 
+                  filter(name_clean %in% target_common_names)
+ebird_AZ_checklists <- read_csv("../eBird_Data/subsets-2019/state_rdbs/AZ_Aug2019_checklist_info.csv")
+
+
+ebird_UT_obs <- read_csv("../eBird_Data/subsets-2019/state_rdbs/UT_Aug2019_species_counts.csv") %>% 
+                  filter(name_clean %in% target_common_names)
+ebird_UT_checklists <- read_csv("../eBird_Data/subsets-2019/state_rdbs/UT_Aug2019_checklist_info.csv")
+
+# 
+species_names <- ebird_CA_obs %>% 
+                 select(name_clean, SCIENTIFIC.NAME) %>% 
+                 distinct(name_clean, SCIENTIFIC.NAME)
+
+# North American Breeding Bird Survey data
+# From https://www.pwrc.usgs.gov/bbs/
+NABBS_files <- list.files("NABBS_data_28012020", full.names = T)
+NABBS_data <- lapply(NABBS_files, read_csv)
+
+# Global Biodiversity Information Facility data
+# From https://doi.org/10.15468/dl.r49uys (csv from https://doi.org/10.15468/dl.qfmedi)
+gbif_data <- read_delim(file = "gbif_data_28012020/0000808-200127171203522.csv", 
+                        delim = "\t", quote = "")
+```
+
+
+To save myself time later on, I'm going to write out the eBird obs and checklist files filtered for the species we want inside this repo.
+```{r}
+write_csv(ebird_CA_obs, "eBird_data/ebird_target_spec_obs_CA.csv")
+write_csv(ebird_NV_obs, "eBird_data/ebird_target_spec_obs_NV.csv")
+write_csv(ebird_UT_obs, "eBird_data/ebird_target_spec_obs_UT.csv")
+write_csv(ebird_AZ_obs, "eBird_data/ebird_target_spec_obs_AZ.csv")
+
+write_csv(ebird_CA_checklists, "eBird_data/ebird_target_spec_checklists_CA.csv")
+write_csv(ebird_NV_checklists, "eBird_data/ebird_target_spec_checklists_NV.csv")
+write_csv(ebird_UT_checklists, "eBird_data/ebird_target_spec_checklists_UT.csv")
+write_csv(ebird_AZ_checklists, "eBird_data/ebird_target_spec_checklists_AZ.csv")
+
+```
+
+
+
+
+Let's explore the data a bit. What do we have?
+
+### eBird exploration
+
+We have 33655 instances of positive IDs of our four species in NV, and 75737 in CA. But how many of each species?
+
+```{r}
+ebird_CA_obs %>% 
+  count(name_clean) %>% 
+  arrange(-n)
+ebird_NV_obs %>% 
+  count(name_clean) %>% 
+  arrange(-n)
+ebird_AZ_obs %>% 
+  count(name_clean) %>% 
+  arrange(-n)
+ebird_UT_obs %>% 
+  count(name_clean) %>% 
+  arrange(-n)
+```
+
+What's the spatial distribution of the data?
+
+```{r}
+ebird_NV_obs_w_info <- left_join(ebird_NV_obs, ebird_NV_checklists)
+ebird_CA_obs_w_info <- left_join(ebird_CA_obs, ebird_CA_checklists)
+ebird_AZ_obs_w_info <- left_join(ebird_AZ_obs, ebird_AZ_checklists)
+ebird_UT_obs_w_info <- left_join(ebird_UT_obs, ebird_UT_checklists)
+
+ebird_obs_w_info <- bind_rows(ebird_NV_obs_w_info, 
+                              ebird_CA_obs_w_info, 
+                              ebird_AZ_obs_w_info,
+                              ebird_UT_obs_w_info)
+
+us <- map_data("state", region = c("Nevada", "California", "Arizona", "Utah"))
+
+ggplot() +
+  geom_map(data = us, map = us, aes(long, lat, map_id = region), 
+           col = "black", fill = "white") +
+  geom_point(data = ebird_obs_w_info, 
+             aes(LONGITUDE, LATITUDE, col = name_clean), cex = 0.2) + coord_fixed()
+```
+

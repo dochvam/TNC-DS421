@@ -1,0 +1,27 @@
+
+Dataset: University of Michigan Museum of Zoology, Division of Birds
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+Dataset: Xeno-canto - Bird sounds from around the world
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+Dataset: AMNH Bird Collection
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: Museum of Comparative Zoology, Harvard University
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+Dataset: MVZ Bird Collection (Arctos)
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: NMNH Extant Specimen Records
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: NatureServe Network Species Occurrence Data
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+Dataset: Riqueza específica, distribución y abundancia de aves terrestres y marinas en Isla San José, Golfo de California, Baja California Sur, México
+Rights as supplied: http://creativecommons.org/licenses/by/4.0/legalcode
+Dataset: WFVZ Bird Collections
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: Atlas de las Aves de México: Fase II
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+Dataset: Point Reyes Bird Observatory - Point Counts
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: Great Backyard Bird Count
+Rights as supplied: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+Dataset: iNaturalist Research-grade Observations
+Rights as supplied: http://creativecommons.org/licenses/by-nc/4.0/legalcode

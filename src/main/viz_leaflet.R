@@ -56,10 +56,10 @@ get_leaflet <- function(myraster, mytitle) {
 #   inputs: climate variables, covariates, species, scaling factors, and climate factors (to scale climate)
 #   outputs: leaflet visualization
 
-get_leaflet_occu_surface <- function(climate_stack, all_covs, species, scaling_factors, climate_factors) {
+get_leaflet_occu_surface <- function(input_stack, all_covs, species, scaling_factors, climate_factors) {
   
-  climate_stack_scaled = scale_climate_stack(climate_stack, climate_factors)
-  occu_surface <- predict_occu_surface(climate_stack_scaled, all_covs, species ,scaling_factors)
+  input_stack_scaled = scale_input_stack(input_stack, climate_factors)
+  occu_surface <- predict_occu_surface(input_stack_scaled, all_covs, species ,scaling_factors)
   map <- get_leaflet(occu_surface, "%")
   
   return(map)

@@ -3,12 +3,20 @@
 ## Lisa Rennels, Ben Goldstein, Michelle Yu
 ##
 
+source("src/main/utils.R")
+source("src/main/viz_leaflet.R")
+
+##
+## SETUP
+##
+
+# want to render in external html
+set_null_viewer()
+
 # IMPT: SET YOUR WORKING DIRECTORY to the main TNC-DS421 project folder, which is two levels 
 # above this file and contains the `data` and `src` primary folders. All paths are relative to this
 # directory.
 
-source("src/main/utils.R")
-source("src/main/viz.R")
 
 ## 
 ## load variables and set constants
@@ -28,7 +36,7 @@ species = "Verdin"
 ##
 
 occu_surface <- predict_occu_surface(prism_stack, all_covs, species, scaling_factors)
-display_raster(occu_surface, "%")
+get_leaflet(occu_surface, "%")
 
 ##
 ## Example 2. Use New Climate Conditions
@@ -37,10 +45,17 @@ display_raster(occu_surface, "%")
 climate_factors = c(0.8, 1, 1, 1) # 80% of precip, increases of 1 deg C for all temperature variables
 new_prism_stack = scale_climate_stack(prism_stack, climate_factors)
 occu_surface_new <- predict_occu_surface(new_prism_stack, all_covs, species, scaling_factors)
-display_raster(occu_surface_new, "%")
+get_leaflet(occu_surface_new, "%")
 
 ##
 ## Example 3. Use built in functions (eventually wrap this in RShiny)
 ##
 
-display_occu_surface(prism_stack, all_covs, species, scaling_factors, c(0.1, 5, 5, 5)) # baseline climate
+get_leaflet_occu_surface(prism_stack, all_covs, species, scaling_factors, c(0.1, 5, 5, 5)) # baseline climate
+
+## 
+## Cleanup
+##
+
+# reset RStudio viewer to usual settings with an internal viewer
+reset_viewer()

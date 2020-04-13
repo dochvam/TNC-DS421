@@ -7,6 +7,7 @@ library(shiny)
 library(raster)
 library(tidyverse)
 library(rgdal)
+library(devtools)
 
 source("src/main/utils.R")
 
@@ -17,31 +18,49 @@ project_raster_to_WGS84 <- function(myraster) {
   crs(precip) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") # projection
 }
 
-# display_raster: function to use leaflet to display a raster
+# get_leaflet: function to use leaflet to display a raster
 #   inputs: input raster and title
 #   outputs: leaflet visualization
-display_raster <- function(myraster, mytitle) {
+get_leaflet <- function(myraster, mytitle) {
   
   # get color palette
   pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(myraster),
                       na.color = "transparent")
   
   # use leaflet to display the raster (https://rstudio.github.io/leaflet/raster.html)
-  leaflet() %>% addTiles() %>%
-    addRasterImage(myraster, colors = pal, opacity = 0.8) %>%
-    addLegend(pal = pal, values = values(myraster),
-              title = mytitle)
+  map <- leaflet() %>% 
+    
+    # base groups
+    addTiles(group = "State Lines (default)") %>%
+    
+    # map groups
+    addRasterImage(myraster, colors = pal, opacity = 0.8, group = "Occupancy") %>%
+    addLegend(pal = pal, values = values(myraster),title = mytitle, group = "Occupancy")
+  
+    # marker groups
+    # TODO - add points
+  
+    # layer control (https://rstudio.github.io/leaflet/showhide.html)
+    # TODO - not working right now ( Error in getMapData(map) : argument "map" is missing, with no default )
+    # addLayersControl(
+    #  baseGroups = c("State Lines (default)"),
+    #  overlayGroups = c("Occupancy"),
+    #  options = layersControlOptions(collapsed = FALSE)
+    # )
+  return (map)
 }
 
-# display_occu_surface: function to display an occupancy surface
+# get_leaflet_occu_surface: function to display an occupancy surface
 #   inputs: climate variables, covariates, species, scaling factors, and climate factors (to scale climate)
 #   outputs: leaflet visualization
 
-display_occu_surface <- function(climate_stack, all_covs, species, scaling_factors, climate_factors) {
+get_leaflet_occu_surface <- function(climate_stack, all_covs, species, scaling_factors, climate_factors) {
   
   climate_stack_scaled = scale_climate_stack(climate_stack, climate_factors)
   occu_surface <- predict_occu_surface(climate_stack_scaled, all_covs, species ,scaling_factors)
-  display_raster(occu_surface, "%")
+  map <- get_leaflet(occu_surface, "%")
+  
+  return(map)
   
 }
 

@@ -10,11 +10,18 @@ source("src/main/viz_leaflet.R")
 ## SETUP and INFO
 ##
 
-# IMPT: SET YOUR WORKING DIRECTORY to the main TNC-DS421 project folder, which is two levels 
+# 1. SET YOUR WORKING DIRECTORY to the main TNC-DS421 project folder, which is two levels 
 # above this file and contains the `data` and `src` primary folders. All paths are relative to this
 # directory.
 
-# options for species are: "Verdin", "Crissal_Thrasher", "Black-tailed-Gnatcatcher", and "Bells-Vireo"
+# 2. Your options for species are: "Verdin", "Crissal_Thrasher", "Black-tailed-Gnatcatcher", and "Bells-Vireo"
+
+# 3. If you want to visualize in your default RStudio viewer, no action is needed. If you would prefer to force
+# the visualization to appear in a local html browser, toggle this on with set_null_viewer() and off at the
+# end of the script with reset_viewer(), as below.  Note these custom funcs may be specific to RStudio version.
+
+set_null_viewer() # set options$viewer to null so visualization is in local html browser
+reset_viewer()    # reset options$viewer to RStudio Viewer
 
 ## 
 ## load variables and set constants

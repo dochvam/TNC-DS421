@@ -10,9 +10,6 @@ source("src/main/viz_leaflet.R")
 ## SETUP
 ##
 
-# want to render in external html
-set_null_viewer()
-
 # IMPT: SET YOUR WORKING DIRECTORY to the main TNC-DS421 project folder, which is two levels 
 # above this file and contains the `data` and `src` primary folders. All paths are relative to this
 # directory.
@@ -52,10 +49,3 @@ get_leaflet(occu_surface_new, "%")
 ##
 
 get_leaflet_occu_surface(prism_stack, all_covs, species, scaling_factors, c(0.1, 5, 5, 5)) # baseline climate
-
-## 
-## Cleanup
-##
-
-# reset RStudio viewer to usual settings with an internal viewer
-reset_viewer()

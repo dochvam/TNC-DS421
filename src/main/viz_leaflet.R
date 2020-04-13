@@ -24,7 +24,7 @@ project_raster_to_WGS84 <- function(myraster) {
 get_leaflet <- function(myraster, mytitle) {
   
   # get color palette
-  pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(myraster),
+  pal <- colorNumeric(c("#FFFFCC", "#41B6C4", "#0C2C84"), values(myraster),
                       na.color = "transparent")
   
   # use leaflet to display the raster (https://rstudio.github.io/leaflet/raster.html)
@@ -34,19 +34,21 @@ get_leaflet <- function(myraster, mytitle) {
     addTiles(group = "State Lines (default)") %>%
     
     # map groups
-    addRasterImage(myraster, colors = pal, opacity = 0.8, group = "Occupancy") %>%
-    addLegend(pal = pal, values = values(myraster),title = mytitle, group = "Occupancy")
+    addRasterImage(myraster, colors = pal, opacity = 0.8, group = "Occupancy Surface") %>%
+    addLegend(pal = pal, values = values(myraster),title = mytitle, group = "Occupancy Surface") %>%
   
     # marker groups
     # TODO - add points
   
     # layer control (https://rstudio.github.io/leaflet/showhide.html)
-    # TODO - not working right now ( Error in getMapData(map) : argument "map" is missing, with no default )
-    # addLayersControl(
-    #  baseGroups = c("State Lines (default)"),
-    #  overlayGroups = c("Occupancy"),
-    #  options = layersControlOptions(collapsed = FALSE)
-    # )
+    addLayersControl(
+      baseGroups = c("State Lines (default)"),
+      overlayGroups = c("Occupancy Surface"),
+      options = layersControlOptions(collapsed = FALSE)
+     ) %>% 
+    
+    hideGroup("Occupancy Surface") # start with occupancy surface hidden
+  
   return (map)
 }
 

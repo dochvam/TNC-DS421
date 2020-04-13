@@ -30,12 +30,13 @@ get_var_wide <- function(df, col, maxobs) {
 }
 
 # Randomize the order of rows for the sake of cropping (to improve computation time during testing)
-cropped_checklists_shuffled <- sample(cropped_checklists) %>% 
+cropped_checklists_shuffled <- sample_n(cropped_checklists, 
+                                        size = nrow(cropped_checklists)) %>% 
   filter(!is.na(landcover)) %>% 
   filter(!is.na(pop_density))
 
-nsites <- 47343
-nvisits <- 5
+nsites <- nrow(distinct_locations)
+nvisits <- 3
 
 # Start getting matrices of each variable of interest
 distance_mtx <- get_var_wide(cropped_checklists_shuffled, "EFFORT.DISTANCE.KM", nvisits)
@@ -45,33 +46,37 @@ protocol_mtx <- get_var_wide(cropped_checklists_shuffled, "PROTOCOL.CODE", nvisi
 duration_mtx <- get_var_wide(cropped_checklists_shuffled, "DURATION.MINUTES", nvisits)
 
 scale_factors <- 
-  data.frame(param = c("precip", "tmean", "tmin", "tmax", "latitude", "longitude"),
+  data.frame(param = c("precip", "tmean", "tmin", "tmax", "latitude", "longitude", "elev"),
              median = c(
                median(cropped_checklists_shuffled$precip, na.rm = T),
                median(cropped_checklists_shuffled$tmean, na.rm = T),
                median(cropped_checklists_shuffled$tmin, na.rm = T),
                median(cropped_checklists_shuffled$tmax, na.rm = T),
                median(cropped_checklists_shuffled$LATITUDE, na.rm = T),
-               median(cropped_checklists_shuffled$LONGITUDE, na.rm = T)
+               median(cropped_checklists_shuffled$LONGITUDE, na.rm = T),
+               median(cropped_checklists_shuffled$elev, na.rm = T)
              ), sd = c(
                sd(cropped_checklists_shuffled$precip, na.rm = T),
                sd(cropped_checklists_shuffled$tmean, na.rm = T),
                sd(cropped_checklists_shuffled$tmin, na.rm = T),
                sd(cropped_checklists_shuffled$tmax, na.rm = T),
                sd(cropped_checklists_shuffled$LATITUDE, na.rm = T),
-               sd(cropped_checklists_shuffled$LONGITUDE, na.rm = T)
+               sd(cropped_checklists_shuffled$LONGITUDE, na.rm = T),
+               sd(cropped_checklists_shuffled$elev, na.rm = T)
              ))
 write_csv(scale_factors, "data/intermediate/scale_factors.csv")
 
 site_covariates <- data.frame(precip = (cropped_checklists_shuffled$precip - scale_factors$median[1]) / scale_factors$sd[1],
                               precip_sq = ((cropped_checklists_shuffled$precip - scale_factors$median[1]) / scale_factors$sd[1])^2,
                               tmean = (cropped_checklists_shuffled$tmean - scale_factors$median[2]) / scale_factors$sd[2],
-                              tmax = (cropped_checklists_shuffled$tmin - scale_factors$median[3]) / scale_factors$sd[3],
-                              tmin = (cropped_checklists_shuffled$tmax - scale_factors$median[4]) / scale_factors$sd[4],
+                              tmin = (cropped_checklists_shuffled$tmin - scale_factors$median[3]) / scale_factors$sd[3],
+                              tmax = (cropped_checklists_shuffled$tmax - scale_factors$median[4]) / scale_factors$sd[4],
                               latitude = (cropped_checklists_shuffled$LATITUDE - scale_factors$median[5]) / scale_factors$sd[5],
                               latitude_sq = ((cropped_checklists_shuffled$LATITUDE - scale_factors$median[5]) / scale_factors$sd[5])^2,
                               longitude = (cropped_checklists_shuffled$LONGITUDE - scale_factors$median[6]) / scale_factors$sd[6],
                               longitude_sq = ((cropped_checklists_shuffled$LATITUDE - scale_factors$median[6]) / scale_factors$sd[6])^2,
+                              elev = (cropped_checklists_shuffled$elev - scale_factors$median[7]) / scale_factors$sd[7],
+                              elev_sq = ((cropped_checklists_shuffled$elev - scale_factors$median[7]) / scale_factors$sd[7])^2,
                               popdensity = scale(cropped_checklists_shuffled$pop_density),
                               landcover = as.factor(cropped_checklists_shuffled$landcover))[1:nsites,]
 observation_covariates <- list(distance = scale(distance_mtx[1:nsites,]),
@@ -89,12 +94,13 @@ occu_frame <- unmarkedFrameOccu(y = observed_mtx,
 # Fit model for crissal thrasher
 system.time(
   cth_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude + elev + elev_sq,
                   data = occu_frame)
 )
 cth_covs <- data.frame(species = "Crissal_Thrasher",
                        param = names(cth_occufit@estimates@estimates$state@estimates),
-                       est = cth_occufit@estimates@estimates$state@estimates)
+                       est = cth_occufit@estimates@estimates$state@estimates,
+                       se = SE(cth_occufit)[grepl(pattern = "psi", names(SE(cth_occufit)))])
 
 # Fit for black tailed gnatcatcher
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "btg_observed", nvisits)
@@ -103,12 +109,13 @@ occu_frame <- unmarkedFrameOccu(y = observed_mtx,
                                 obsCovs = observation_covariates)
 system.time(
   btg_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude + elev + elev_sq,
                   data = occu_frame)
 )
 btg_covs <- data.frame(species = "Black-tailed_Gnatcatcher",
                        param = names(btg_occufit@estimates@estimates$state@estimates),
-                       est = btg_occufit@estimates@estimates$state@estimates)
+                       est = btg_occufit@estimates@estimates$state@estimates,
+                       se = SE(btg_occufit)[grepl(pattern = "psi", names(SE(btg_occufit)))])
 
 # Fit for Bell's vireo
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "bvo_observed", nvisits)
@@ -117,12 +124,13 @@ occu_frame <- unmarkedFrameOccu(y = observed_mtx,
                                 obsCovs = observation_covariates)
 system.time(
   bvo_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude + elev + elev_sq,
                   data = occu_frame)
 )
 bvo_covs <- data.frame(species = "Bells_Vireo",
                        param = names(bvo_occufit@estimates@estimates$state@estimates),
-                       est = bvo_occufit@estimates@estimates$state@estimates)
+                       est = bvo_occufit@estimates@estimates$state@estimates,
+                       se = SE(bvo_occufit)[grepl(pattern = "psi", names(SE(bvo_occufit)))])
 
 # Fit for Verdin
 observed_mtx <- get_var_wide(cropped_checklists_shuffled, "vrd_observed", nvisits)
@@ -131,12 +139,13 @@ occu_frame <- unmarkedFrameOccu(y = observed_mtx,
                                 obsCovs = observation_covariates)
 system.time(
   vrd_occufit <- occu(~ distance + tod + tod_sq + doy + doy_sq + duration + protocol 
-                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude,
+                  ~ precip * tmin + tmean + tmax + latitude + latitude_sq + longitude + elev + elev_sq,
                   data = occu_frame)
 )
 vrd_covs <- data.frame(species = "Verdin",
                        param = names(vrd_occufit@estimates@estimates$state@estimates),
-                       est = vrd_occufit@estimates@estimates$state@estimates)
+                       est = vrd_occufit@estimates@estimates$state@estimates,
+                       se = SE(vrd_occufit)[grepl(pattern = "psi", names(SE(vrd_occufit)))])
 
 
 all_covs <- bind_rows(vrd_covs, bvo_covs, btg_covs, cth_covs)

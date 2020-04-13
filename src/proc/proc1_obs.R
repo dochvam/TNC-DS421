@@ -90,8 +90,8 @@ good_checklist_info$bvo_observed <-
 sum(!(btg_obs$SAMPLING.EVENT.IDENTIFIER %in% good_checklist_info$SAMPLING.EVENT.IDENTIFIER)) /
   nrow(btg_obs)
 cropped_checklists <- good_checklist_info %>% 
-                      filter(LONGITUDE < -109 & LONGITUDE > -120 &
-                             LATITUDE < 40 & LATITUDE > 30)
+                      filter(LONGITUDE < -110 & LONGITUDE > -118 &
+                             LATITUDE < 38 & LATITUDE > 32)
 distinct_locations <- cropped_checklists %>%
                       count(LATITUDE, LONGITUDE, sort = T) %>% 
                       filter(n > 1) %>% 

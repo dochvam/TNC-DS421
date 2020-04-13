@@ -1,0 +1,26 @@
+[general]
+creator=R package 'raster'
+created=2020-04-13 11:28:57
+[georeference]
+nrows=719
+ncols=959
+xmin=-117.99583333584
+ymin=32.0041666635974
+xmax=-110.004166672404
+ymax=37.9958333279485
+projection=+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0
+[data]
+datatype=FLT4S
+byteorder=little
+nbands=1
+bandorder=BIL
+categorical=FALSE
+minvalue=-80
+maxvalue=3647
+nodatavalue=-3.4e+38
+[legend]
+legendtype=
+values=
+color=
+[description]
+layername=PRISM_us_dem_800m_bil
